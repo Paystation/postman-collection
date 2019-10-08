@@ -1,0 +1,1404 @@
+{
+	"info": {
+		"_postman_id": "c5d9e4e9-f01f-4872-b3de-48c7a352b33b",
+		"name": "Paystation",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Purchase",
+			"item": [
+				{
+					"name": "2 party",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "a1b5ec40-d15f-4e12-893f-83872d9ad73d",
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "paystation=_empty\r\n&pstn_nr=t\r\n&pstn_pi={{PaystationAccount}}\r\n&pstn_gi={{PaystationGateway}}\r\n&pstn_ms={{$guid}}\r\n&pstn_2p=t\r\n&pstn_am=100\r\n&pstn_cn={{CardNumber}}\r\n&pstn_ex={{Expiry}}\r\n&pstn_cc={{CSC}}"
+						},
+						"url": {
+							"raw": "https://paystation.co.nz/direct/paystation.dll",
+							"protocol": "https",
+							"host": [
+								"paystation",
+								"co",
+								"nz"
+							],
+							"path": [
+								"direct",
+								"paystation.dll"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "3 party",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "paystation=_empty\r\n&pstn_nr=t\r\n&pstn_pi={{PaystationAccount}}\r\n&pstn_gi={{PaystationGateway}}\r\n&pstn_ms={{$guid}}\r\n&pstn_am=5000"
+						},
+						"url": {
+							"raw": "https://paystation.co.nz/direct/paystation.dll",
+							"protocol": "https",
+							"host": [
+								"paystation",
+								"co",
+								"nz"
+							],
+							"path": [
+								"direct",
+								"paystation.dll"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "3 party with HMAC",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "adbbbca5-94f2-4f2f-983c-beb15d1e43ac",
+								"exec": [
+									"/*\r",
+									"-----------------------------------------------------------------\r",
+									"1) Add the following code to 'Pre-request Script' tab\r",
+									"2) Make sure you have an Environment enabled for your request\r",
+									"3) Append to url: {{hmacQueryString}}\r",
+									"4) Add new environment variable HMAC_KEY with your key\r",
+									"-----------------------------------------------------------------\r",
+									"*/\r",
+									"function getQueryString(url) {\r",
+									"    var arrSplit = url.split('?');\r",
+									"    return arrSplit.length > 1 ? url.substring(url.indexOf('?') + 1) : '';\r",
+									"}\r",
+									"\r",
+									"function buildPostBody(body) {\r",
+									"    const uuid = require('uuid');\r",
+									"    body = JSON.parse('{\"' + decodeURI(body).replace(/\\s/g, '').replace(/\"/g, '\\\\\"').replace(/&/g, '\",\"').replace(/=/g,'\":\"') + '\"}');\r",
+									"    body.pstn_ms = 'MS-HMAC-' + uuid.v4();\r",
+									"    pm.variables.set('MerchantSession', body.pstn_ms);\r",
+									"    body.pstn_pi = pm.variables.get(\"PaystationAccount\");\r",
+									"    body.pstn_gi = pm.variables.get(\"PaystationGateway\");\r",
+									"    return Object.keys(body).map(function(k) { return encodeURIComponent(k) + '=' + encodeURIComponent(body[k])}).join('\\n&');\r",
+									"}\r",
+									"\r",
+									"function getAuthHeader(httpMethod, requestUrl, requestBody) {\r",
+									"    const moment = require('moment');\r",
+									"\r",
+									"    const AUTH_TYPE = 'HMAC-SHA512';\r",
+									"    const HMAC_KEY = postman.getEnvironmentVariable('HmacKey');\r",
+									"\r",
+									"    var queryString = getQueryString(requestUrl);\r",
+									"    requestBody = buildPostBody(requestBody);\r",
+									"    var timestamp = moment(new Date().toISOString()).valueOf();\r",
+									"    var dataToHash = timestamp + 'paystation' + requestBody;\r",
+									"    var hmacDigest = CryptoJS.enc.Hex.stringify(CryptoJS.HmacSHA512(dataToHash, HMAC_KEY));\r",
+									"    return 'pstn_HMACTimestamp=' + timestamp + '&pstn_HMAC=' + hmacDigest;\r",
+									"}\r",
+									"\r",
+									"postman.setEnvironmentVariable('hmacQueryString', getAuthHeader(request['method'], request['url'], request['data']));"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "paystation=_empty\n&pstn_nr=t\n&pstn_pi={{PaystationAccount}}\n&pstn_gi={{PaystationGateway}}\n&pstn_ms={{MerchantSession}}\n&pstn_am=5000"
+						},
+						"url": {
+							"raw": "https://paystation.co.nz/direct/paystation.dll/direct/paystation.dll?{{hmacQueryString}}",
+							"protocol": "https",
+							"host": [
+								"paystation",
+								"co",
+								"nz"
+							],
+							"path": [
+								"direct",
+								"paystation.dll",
+								"direct",
+								"paystation.dll"
+							],
+							"query": [
+								{
+									"key": "{{hmacQueryString}}",
+									"value": null
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "Authorisation",
+			"item": [
+				{
+					"name": "2 party",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "d820c531-012c-4b05-b56f-997bb83b2bc2",
+								"exec": [
+									"pm.test('response is ok', function() {",
+									"    pm.response.to.have.status(200);",
+									"    var response = xml2Json(responseBody);",
+									"    pm.expect(response).to.have.property('PaystationFuturePaymentResponse');",
+									"    pm.expect(response.PaystationFuturePaymentResponse).to.have.property('FuturePaymentToken');",
+									"});",
+									"",
+									"pm.test('response has token', function() {",
+									"    var response = xml2Json(responseBody);",
+									"    pm.expect(response).to.have.property('PaystationFuturePaymentResponse');",
+									"    pm.expect(response.PaystationFuturePaymentResponse).to.have.property('FuturePaymentToken'); ",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "paystation=_empty\r\n&pstn_nr=t\r\n&pstn_pi={{PaystationAccount}}\r\n&pstn_gi={{PaystationGateway}}\r\n&pstn_ms={{$guid}}\r\n&pstn_2p=t\r\n&pstn_am=100\r\n&pstn_cn={{CardNumber}}\r\n&pstn_ex={{Expiry}}\r\n&pstn_cc={{CSC}}\r\n&pstn_pa=t"
+						},
+						"url": {
+							"raw": "https://paystation.co.nz/direct/paystation.dll",
+							"protocol": "https",
+							"host": [
+								"paystation",
+								"co",
+								"nz"
+							],
+							"path": [
+								"direct",
+								"paystation.dll"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "3 party",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "2ae460c0-6f39-4159-8250-1233baa23833",
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "paystation=_empty\r\n&pstn_nr=t\r\n&pstn_pi={{PaystationAccount}}\r\n&pstn_gi={{PaystationGateway}}\r\n&pstn_ms={{$guid}}\r\n&pstn_am=100\r\n&pstn_pa=t"
+						},
+						"url": {
+							"raw": "https://paystation.co.nz/direct/paystation.dll",
+							"protocol": "https",
+							"host": [
+								"paystation",
+								"co",
+								"nz"
+							],
+							"path": [
+								"direct",
+								"paystation.dll"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "Capture",
+			"item": [
+				{
+					"name": "2 party",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "paystation=_empty\r\n&pstn_nr=t\r\n&pstn_pi={{PaystationAccount}}\r\n&pstn_gi={{PaystationGateway}}\r\n&pstn_ms={{$guid}}\r\n&pstn_am=100\r\n&pstn_2p=t\r\n&pstn_cp=t\r\n&pstn_cx=0000000000-01"
+						},
+						"url": {
+							"raw": "https://paystation.co.nz/direct/paystation.dll",
+							"protocol": "https",
+							"host": [
+								"paystation",
+								"co",
+								"nz"
+							],
+							"path": [
+								"direct",
+								"paystation.dll"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "Refund",
+			"item": [
+				{
+					"name": "Refund transaction",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "8d4381a3-b701-489b-ba9f-8c67ad8e862c",
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "paystation=_empty\r\n&pstn_nr=t\r\n&pstn_pi={{PaystationAccount}}\r\n&pstn_gi={{PaystationGateway}}\r\n&pstn_ms={{$guid}}\r\n&pstn_am=100\r\n&pstn_2p=t\r\n&pstn_rc=t\r\n&pstn_rt=0000000000-01"
+						},
+						"url": {
+							"raw": "https://paystation.co.nz/direct/paystation.dll",
+							"protocol": "https",
+							"host": [
+								"paystation",
+								"co",
+								"nz"
+							],
+							"path": [
+								"direct",
+								"paystation.dll"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "Reversal",
+			"item": [
+				{
+					"name": "Reversal transaction",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "2e08a9b6-189f-44df-afee-ac10094b00d1",
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "paystation=_empty\r\n&pstn_nr=t\r\n&pstn_pi={{PaystationAccount}}\r\n&pstn_gi={{PaystationGateway}}\r\n&pstn_ms={{$guid}}\r\n&pstn_2p=t\r\n&pstn_rv=t\r\n&pstn_rt=0000000000-01"
+						},
+						"url": {
+							"raw": "https://paystation.co.nz/direct/paystation.dll",
+							"protocol": "https",
+							"host": [
+								"paystation",
+								"co",
+								"nz"
+							],
+							"path": [
+								"direct",
+								"paystation.dll"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "Tokens",
+			"item": [
+				{
+					"name": "Save",
+					"item": [
+						{
+							"name": "2 party",
+							"item": [
+								{
+									"name": "Token save",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "a52d3345-9d83-4d5b-83cc-5e090e5fe186",
+												"exec": [
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "paystation=_empty\r\n&pstn_nr=t\r\n&pstn_pi={{PaystationAccount}}\r\n&pstn_gi={{PaystationGateway}}\r\n&pstn_ms={{$guid}}\r\n&pstn_2p=t\r\n&pstn_fp=t\r\n&pstn_fs=t\r\n&pstn_cn={{CardNumber}}\r\n&pstn_ex={{Expiry}}"
+										},
+										"url": {
+											"raw": "https://www.paystation.co.nz/direct/paystation.dll",
+											"protocol": "https",
+											"host": [
+												"www",
+												"paystation",
+												"co",
+												"nz"
+											],
+											"path": [
+												"direct",
+												"paystation.dll"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Token save with custom token",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "8104c498-8b20-426a-b1f4-272918a791b3",
+												"exec": [
+													"pm.test('response is ok', function() {",
+													"    pm.response.to.have.status(200);",
+													"    var response = xml2Json(responseBody);",
+													"    pm.expect(response).to.have.property('PaystationFuturePaymentResponse');",
+													"    pm.expect(response.PaystationFuturePaymentResponse).to.have.property('FuturePaymentToken');",
+													"});",
+													"",
+													"pm.test('response has token', function() {",
+													"    var response = xml2Json(responseBody);",
+													"    pm.expect(response).to.have.property('PaystationFuturePaymentResponse');",
+													"    pm.expect(response.PaystationFuturePaymentResponse).to.have.property('FuturePaymentToken'); ",
+													"});"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "paystation=_empty\r\n&pstn_nr=t\r\n&pstn_pi={{PaystationAccount}}\r\n&pstn_gi={{PaystationGateway}}\r\n&pstn_ms={{$guid}}\r\n&pstn_2p=t\r\n&pstn_fp=t\r\n&pstn_fs=t\r\n&pstn_cn={{CardNumber}}\r\n&pstn_ex={{Expiry}}\r\n&pstn_ft=test-token-creation-{{$timestamp}}"
+										},
+										"url": {
+											"raw": "https://www.paystation.co.nz/direct/paystation.dll",
+											"protocol": "https",
+											"host": [
+												"www",
+												"paystation",
+												"co",
+												"nz"
+											],
+											"path": [
+												"direct",
+												"paystation.dll"
+											]
+										}
+									},
+									"response": []
+								}
+							],
+							"protocolProfileBehavior": {},
+							"_postman_isSubFolder": true
+						},
+						{
+							"name": "3 party",
+							"item": [
+								{
+									"name": "Token save",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "e7159313-6147-44b3-bfb4-ae48f2bda024",
+												"exec": [
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "paystation=_empty\r\n&pstn_nr=t\r\n&pstn_pi={{PaystationAccount}}\r\n&pstn_gi={{PaystationGateway}}\r\n&pstn_ms={{$guid}}\r\n&pstn_fp=t\r\n&pstn_fs=t"
+										},
+										"url": {
+											"raw": "https://www.paystation.co.nz/direct/paystation.dll",
+											"protocol": "https",
+											"host": [
+												"www",
+												"paystation",
+												"co",
+												"nz"
+											],
+											"path": [
+												"direct",
+												"paystation.dll"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Token save with custom token",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "8ae1356d-4883-45fd-b946-c007deb77502",
+												"exec": [
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "paystation=_empty\r\n&pstn_nr=t\r\n&pstn_pi={{PaystationAccount}}\r\n&pstn_gi={{PaystationGateway}}\r\n&pstn_ms={{$guid}}\r\n&pstn_fp=t\r\n&pstn_fs=t\r\n&pstn_ft=test-token-creation-{{$timestamp}}"
+										},
+										"url": {
+											"raw": "https://www.paystation.co.nz/direct/paystation.dll",
+											"protocol": "https",
+											"host": [
+												"www",
+												"paystation",
+												"co",
+												"nz"
+											],
+											"path": [
+												"direct",
+												"paystation.dll"
+											]
+										}
+									},
+									"response": []
+								}
+							],
+							"protocolProfileBehavior": {},
+							"_postman_isSubFolder": true
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "Initiator",
+					"item": [
+						{
+							"name": "2 party",
+							"item": [
+								{
+									"name": "token initiator",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "c2104908-27dd-416e-91e5-a6feb4357016",
+												"exec": [
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "paystation=_empty\r\n&pstn_nr=t\r\n&pstn_pi={{PaystationAccount}}\r\n&pstn_gi={{PaystationGateway}}\r\n&pstn_ms={{$guid}}\r\n&pstn_am=100\r\n&pstn_2p=t\r\n&pstn_fp=t\r\n&pstn_cn={{CardNumber}}\r\n&pstn_ex={{Expiry}}"
+										},
+										"url": {
+											"raw": "https://www.paystation.co.nz/direct/paystation.dll",
+											"protocol": "https",
+											"host": [
+												"www",
+												"paystation",
+												"co",
+												"nz"
+											],
+											"path": [
+												"direct",
+												"paystation.dll"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "token initiator + authorisation",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "1ea86957-56ed-4ac8-87c1-4395716c97b0",
+												"exec": [
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "paystation=_empty\r\n&pstn_nr=t\r\n&pstn_pi={{PaystationAccount}}\r\n&pstn_gi={{PaystationGateway}}\r\n&pstn_ms={{$guid}}\r\n&pstn_am=100\r\n&pstn_2p=t\r\n&pstn_fp=t\r\n&pstn_cn={{CardNumber}}\r\n&pstn_ex={{Expiry}}\r\n&pstn_pa=t"
+										},
+										"url": {
+											"raw": "https://www.paystation.co.nz/direct/paystation.dll",
+											"protocol": "https",
+											"host": [
+												"www",
+												"paystation",
+												"co",
+												"nz"
+											],
+											"path": [
+												"direct",
+												"paystation.dll"
+											]
+										}
+									},
+									"response": []
+								}
+							],
+							"protocolProfileBehavior": {},
+							"_postman_isSubFolder": true
+						},
+						{
+							"name": "3 party",
+							"item": [
+								{
+									"name": "token initiator",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "721281ed-0c14-4f85-98a8-8d83b6ac3f5e",
+												"exec": [
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "paystation=_empty\r\n&pstn_nr=t\r\n&pstn_pi={{PaystationAccount}}\r\n&pstn_gi={{PaystationGateway}}\r\n&pstn_ms={{$guid}}\r\n&pstn_am=100\r\n&pstn_fp=t"
+										},
+										"url": {
+											"raw": "https://www.paystation.co.nz/direct/paystation.dll",
+											"protocol": "https",
+											"host": [
+												"www",
+												"paystation",
+												"co",
+												"nz"
+											],
+											"path": [
+												"direct",
+												"paystation.dll"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "token initiator + authorisation",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "a5b1b0a4-22bb-4d8d-b31e-5973f94e11e3",
+												"exec": [
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "paystation=_empty\r\n&pstn_nr=t\r\n&pstn_pi={{PaystationAccount}}\r\n&pstn_gi={{PaystationGateway}}\r\n&pstn_ms={{$guid}}\r\n&pstn_am=100\r\n&pstn_fp=t\r\n&pstn_pa=t"
+										},
+										"url": {
+											"raw": "https://www.paystation.co.nz/direct/paystation.dll",
+											"protocol": "https",
+											"host": [
+												"www",
+												"paystation",
+												"co",
+												"nz"
+											],
+											"path": [
+												"direct",
+												"paystation.dll"
+											]
+										}
+									},
+									"response": []
+								}
+							],
+							"protocolProfileBehavior": {},
+							"_postman_isSubFolder": true
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "Bill",
+					"item": [
+						{
+							"name": "token bill",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "2bd0d49e-de1e-43db-a867-5393eb389a6d",
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "paystation=_empty\r\n&pstn_nr=t\r\n&pstn_pi={{PaystationAccount}}\r\n&pstn_gi={{PaystationGateway}}\r\n&pstn_ms={{$guid}}\r\n&pstn_am=100\r\n&pstn_2p=t\r\n&pstn_fp=t\r\n&pstn_ft=token_name"
+								},
+								"url": {
+									"raw": "https://www.paystation.co.nz/direct/paystation.dll",
+									"protocol": "https",
+									"host": [
+										"www",
+										"paystation",
+										"co",
+										"nz"
+									],
+									"path": [
+										"direct",
+										"paystation.dll"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "token bill + authorisation",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "5f58a6dd-f4f8-48b5-912e-0390349943d1",
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "paystation=_empty\r\n&pstn_nr=t\r\n&pstn_pi={{PaystationAccount}}\r\n&pstn_gi={{PaystationGateway}}\r\n&pstn_ms={{$guid}}\r\n&pstn_am=100\r\n&pstn_fp=t\r\n&pstn_2p=t\r\n&pstn_pa=t\r\n&pstn_ft=token_name"
+								},
+								"url": {
+									"raw": "https://www.paystation.co.nz/direct/paystation.dll",
+									"protocol": "https",
+									"host": [
+										"www",
+										"paystation",
+										"co",
+										"nz"
+									],
+									"path": [
+										"direct",
+										"paystation.dll"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "Update",
+					"item": [
+						{
+							"name": "token update",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "df302494-8890-45c1-b8f7-f6efc290d7dd",
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "paystation=_empty\r\n&pstn_nr=t\r\n&pstn_pi={{PaystationAccount}}\r\n&pstn_gi={{PaystationGateway}}\r\n&pstn_ms={{$guid}}\r\n&pstn_2p=t\r\n&pstn_fp=t\r\n&pstn_fu=t\r\n&pstn_ft=token_name\r\n&pstn_cn={{CardNumber}}\r\n&pstn_ex={{Expiry}}"
+								},
+								"url": {
+									"raw": "https://www.paystation.co.nz/direct/paystation.dll",
+									"protocol": "https",
+									"host": [
+										"www",
+										"paystation",
+										"co",
+										"nz"
+									],
+									"path": [
+										"direct",
+										"paystation.dll"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "Delete",
+					"item": [
+						{
+							"name": "token delete",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "2b19b35a-8a8c-44cc-8768-4523337b94c2",
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "paystation=_empty\r\n&pstn_nr=t\r\n&pstn_pi={{PaystationAccount}}\r\n&pstn_gi={{PaystationGateway}}\r\n&pstn_ms={{$guid}}\r\n&pstn_2p=t\r\n&pstn_fp=t\r\n&pstn_fx=t\r\n&pstn_ft=token_name"
+								},
+								"url": {
+									"raw": "https://www.paystation.co.nz/direct/paystation.dll",
+									"protocol": "https",
+									"host": [
+										"www",
+										"paystation",
+										"co",
+										"nz"
+									],
+									"path": [
+										"direct",
+										"paystation.dll"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "PayMe",
+			"item": [
+				{
+					"name": "Create order",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/x-www-form-urlencoded"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "paystation",
+									"value": "_empty",
+									"type": "text"
+								},
+								{
+									"key": "pstn_nr",
+									"value": "t",
+									"type": "text"
+								},
+								{
+									"key": "pstn_pi",
+									"value": "{{PaystationAccount}}",
+									"type": "text"
+								},
+								{
+									"key": "pstn_gi",
+									"value": "{{PaystationGateway}}",
+									"type": "text"
+								},
+								{
+									"key": "pstn_ms",
+									"value": "{{$guid}}",
+									"type": "text"
+								},
+								{
+									"key": "pstn_co",
+									"value": "t",
+									"type": "text"
+								},
+								{
+									"key": "pstn_cj",
+									"value": "{\n   \"reference\":\"PayMe reference\",\n   \"description\":\"A description for a PayMe example\",\n   \"single\":\"N\"\n}",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "https://www.paystation.co.nz/direct/paystation.dll",
+							"protocol": "https",
+							"host": [
+								"www",
+								"paystation",
+								"co",
+								"nz"
+							],
+							"path": [
+								"direct",
+								"paystation.dll"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Token save",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "20200b01-9921-4f6a-b2c3-044416ff57cc",
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "paystation=_empty\r\n&pstn_nr=t\r\n&pstn_pi={{PaystationAccount}}\r\n&pstn_gi={{PaystationGateway}}\r\n&pstn_fp=t\r\n&pstn_co=t\r\n&pstn_fs=t"
+						},
+						"url": {
+							"raw": "https://www.paystation.co.nz/direct/paystation.dll",
+							"protocol": "https",
+							"host": [
+								"www",
+								"paystation",
+								"co",
+								"nz"
+							],
+							"path": [
+								"direct",
+								"paystation.dll"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Token initiator",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "59286344-16f6-4459-8238-ef019003df87",
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "paystation=_empty\r\n&pstn_nr=t\r\n&pstn_pi={{PaystationAccount}}\r\n&pstn_gi={{PaystationGateway}}\r\n&pstn_fp=t\r\n&pstn_co=t"
+						},
+						"url": {
+							"raw": "https://www.paystation.co.nz/direct/paystation.dll",
+							"protocol": "https",
+							"host": [
+								"www",
+								"paystation",
+								"co",
+								"nz"
+							],
+							"path": [
+								"direct",
+								"paystation.dll"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Token intitiator with amount",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "63b3cb54-df30-481b-ac9f-6d512bf9d3cb",
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "paystation=_empty\r\n&pstn_nr=t\r\n&pstn_pi={{PaystationAccount}}\r\n&pstn_gi={{PaystationGateway}}\r\n&pstn_am=100\r\n&pstn_fp=t\r\n&pstn_co=t"
+						},
+						"url": {
+							"raw": "https://www.paystation.co.nz/direct/paystation.dll",
+							"protocol": "https",
+							"host": [
+								"www",
+								"paystation",
+								"co",
+								"nz"
+							],
+							"path": [
+								"direct",
+								"paystation.dll"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "Quick lookup",
+			"item": [
+				{
+					"name": "Lookup by merchant session",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://payments.paystation.co.nz/lookup?pi={{PaystationAccount}}&ms=<merchant_session_goes_here>",
+							"protocol": "https",
+							"host": [
+								"payments",
+								"paystation",
+								"co",
+								"nz"
+							],
+							"path": [
+								"lookup"
+							],
+							"query": [
+								{
+									"key": "pi",
+									"value": "{{PaystationAccount}}"
+								},
+								{
+									"key": "ms",
+									"value": "<merchant_session_goes_here>"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Lookup by transaction id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://payments.paystation.co.nz/lookup?pi={{PaystationAccount}}&ti=0000000000-01",
+							"protocol": "https",
+							"host": [
+								"payments",
+								"paystation",
+								"co",
+								"nz"
+							],
+							"path": [
+								"lookup"
+							],
+							"query": [
+								{
+									"key": "pi",
+									"value": "{{PaystationAccount}}"
+								},
+								{
+									"key": "ti",
+									"value": "0000000000-01"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "BIN lookup",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/x-www-form-urlencoded"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "pstn_pi",
+									"value": "{{PaystationAccount}}",
+									"type": "text"
+								},
+								{
+									"key": "pstn_bi",
+									"value": "512345",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "https://payments.paystation.co.nz/bin/",
+							"protocol": "https",
+							"host": [
+								"payments",
+								"paystation",
+								"co",
+								"nz"
+							],
+							"path": [
+								"bin",
+								""
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "Transaction reporting",
+			"item": [
+				{
+					"name": "Transaction reporting",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/x-www-form-urlencoded"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "pstn_pi",
+									"value": "{{PaystationAccount}}",
+									"type": "text"
+								},
+								{
+									"key": "pstn_gi",
+									"value": "{{PaystationGateway}}",
+									"type": "text"
+								},
+								{
+									"key": "pstn_cu",
+									"value": "AUD",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "pstn_rf",
+									"value": "json",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "currency_list",
+									"value": "NZD,USD",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "merchant_session_partial_match",
+									"value": "Y",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "merchant_session",
+									"value": "abcd-defg",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "amount",
+									"value": "1000",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "card_start",
+									"value": "512345",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "card_end",
+									"value": "123",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "transaction_mode",
+									"value": "P",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "transaction_type",
+									"value": "REFUND",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "refund_format",
+									"value": "NEGATIVE",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "returned_result_code",
+									"value": "FAILED",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "total_only",
+									"value": "Y",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "short_tags",
+									"value": "Y",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "transaction_id",
+									"value": "0003674628-01",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "merchant_reference",
+									"value": "1",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "from_date",
+									"value": "2019-01-01",
+									"type": "text"
+								},
+								{
+									"key": "to_date",
+									"value": "2019-01-01",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "from_time",
+									"value": "12:00:00",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "to_time",
+									"value": "12:00:00",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "settlement_date",
+									"value": "Y",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "limit",
+									"value": "1",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "start_record",
+									"value": "10000",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "payme_order_id",
+									"value": "1",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "limit_sort",
+									"value": "ASC",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "amount_type",
+									"value": "LESS",
+									"type": "text",
+									"disabled": true
+								}
+							]
+						},
+						"url": {
+							"raw": "https://payments.paystation.co.nz/reporting/",
+							"protocol": "https",
+							"host": [
+								"payments",
+								"paystation",
+								"co",
+								"nz"
+							],
+							"path": [
+								"reporting",
+								""
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"protocolProfileBehavior": {}
+		}
+	],
+	"protocolProfileBehavior": {}
+}
