@@ -1,0 +1,224 @@
+{
+	"info": {
+		"_postman_id": "f0a0e7b6-3b53-4b08-a338-264dad2fe24c",
+		"name": "Working Lookup with HMAC",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Quick lookup GET",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"/*\r",
+							"-----------------------------------------------------------------\r",
+							"1) Add the following code to 'Pre-request Script' tab\r",
+							"2) Make sure you have an Environment enabled for your request\r",
+							"3) Append to url: {{hmacQueryString}}\r",
+							"4) Add new environment variable HMAC_KEY with your key\r",
+							"-----------------------------------------------------------------\r",
+							"*/\r",
+							"\r",
+							"function getPath(url) {\r",
+							"    var pathRegex = /.+?\\:\\/\\/.+?(\\/.+?)(?:#|\\?|$)/;\r",
+							"    var result = url.match(pathRegex);\r",
+							"    return result && result.length > 1 ? result[1] : ''; \r",
+							"}\r",
+							" \r",
+							"function getQueryString(url) {\r",
+							"    var arrSplit = url.split('?');\r",
+							"    return arrSplit.length > 1 ? url.substring(url.indexOf('?')+1) : ''; \r",
+							"}\r",
+							"\r",
+							"function getBody(body) {\r",
+							"  const uuid = require('uuid');  \r",
+							" if (typeof requestBody === 'string') {\r",
+							"    body = JSON.parse(body);\r",
+							" }\r",
+							" console.log(body);\r",
+							" return body;\r",
+							"}\r",
+							" \r",
+							"function getAuthHeader(httpMethod, requestUrl, requestBody) {\r",
+							"\r",
+							"    const moment = require('moment');\r",
+							"   \r",
+							"    const AUTH_TYPE = 'HMAC-SHA512';\r",
+							"    const HMAC_KEY = 'insert HMAC here';//postman.getEnvironmentVariable('HMAC_KEY');\r",
+							"      \r",
+							"    var requestPath = getPath(requestUrl);\r",
+							"    var queryString = getQueryString(requestUrl);\r",
+							"    if (httpMethod == 'GET' || !requestBody) {\r",
+							"        requestBody = ''; \r",
+							"    } else {\r",
+							"         // if using x-www-form-encoded instead of raw\r",
+							"        if (typeof requestBody !== 'string') {\r",
+							"            requestBody = JSON.stringify(requestBody);\r",
+							"            var objBody = JSON.parse(requestBody);\r",
+							"            objBody = getBody(objBody);\r",
+							"            requestBody = Object.keys(objBody).map(function(k) {\r",
+							"            return encodeURIComponent(k) + '=' + encodeURIComponent(objBody[k])}).join('&');\r",
+							"        } else {\r",
+							"            requestBody = getBody(requestBody);\r",
+							"        }\r",
+							"    }   \r",
+							"    var timestamp = moment(new Date().toISOString()).valueOf();\r",
+							"    var dataToHash = timestamp + 'paystation' + requestBody;\r",
+							"    console.log(dataToHash);\r",
+							"    var hmacDigest = CryptoJS.enc.Hex.stringify(CryptoJS.HmacSHA512(dataToHash, HMAC_KEY));\r",
+							"    return 'pstn_HMACTimestamp=' + timestamp + '&pstn_HMAC=' + hmacDigest;\r",
+							"    \r",
+							"}\r",
+							"\r",
+							"postman.setEnvironmentVariable('hmacQueryString', getAuthHeader(request['method'], request['url'], request['data']));"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/x-www-form-urlencoded"
+					}
+				],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "paystation",
+							"value": "_empty",
+							"type": "text",
+							"disabled": true
+						},
+						{
+							"key": "pi",
+							"value": "605037",
+							"type": "text",
+							"disabled": true
+						},
+						{
+							"key": "pstn_gi",
+							"value": "PAYSTATION",
+							"type": "text",
+							"disabled": true
+						},
+						{
+							"key": "pstn_mr",
+							"value": "2part",
+							"type": "text",
+							"disabled": true
+						},
+						{
+							"key": "pi",
+							"value": "605037",
+							"type": "text"
+						},
+						{
+							"key": "ms",
+							"value": "2920200826154812354007954",
+							"type": "text",
+							"disabled": true
+						},
+						{
+							"key": "pstn_2p",
+							"value": "T",
+							"type": "text",
+							"disabled": true
+						},
+						{
+							"key": "pstn_cn",
+							"value": "5123456789012346",
+							"type": "text",
+							"disabled": true
+						},
+						{
+							"key": "pstn_ex",
+							"value": "2105",
+							"type": "text",
+							"disabled": true
+						},
+						{
+							"key": "pstn_cc",
+							"value": "100",
+							"type": "text",
+							"disabled": true
+						},
+						{
+							"key": "pstn_tm",
+							"value": "t",
+							"type": "text",
+							"disabled": true
+						},
+						{
+							"key": "pstn_dp",
+							"value": "https://webhook.site/e64232a5-330c-422c-99c8-6e3fb8ea32df",
+							"type": "text",
+							"disabled": true
+						},
+						{
+							"key": "pstn_ms",
+							"value": "kljsalkjskla",
+							"type": "text",
+							"disabled": true
+						},
+						{
+							"key": "pstn_mc",
+							"value": "hello",
+							"type": "text",
+							"disabled": true
+						},
+						{
+							"key": "pstn_du",
+							"value": "https://webhook.site/232cfc79-5caf-49e8-a4b9-eef7a2004190",
+							"type": "text",
+							"disabled": true
+						}
+					]
+				},
+				"url": {
+					"raw": "https://payments.paystation.co.nz/lookup?{{hmacQueryString}}&pi=605033&ti=0155026008-01",
+					"protocol": "https",
+					"host": [
+						"payments",
+						"paystation",
+						"co",
+						"nz"
+					],
+					"path": [
+						"lookup"
+					],
+					"query": [
+						{
+							"key": "{{hmacQueryString}}",
+							"value": null
+						},
+						{
+							"key": "ms",
+							"value": "2920200826154812354007954",
+							"disabled": true
+						},
+						{
+							"key": "pi",
+							"value": "605033"
+						},
+						{
+							"key": "ti",
+							"value": "0155026008-01"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
