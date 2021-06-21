@@ -17,6 +17,7 @@ Requires the installation of [Postman](https://www.getpostman.com/).
 - CardNumber - Test card - [List of test cards](https://www2.paystation.co.nz/developers/test-cards/)
 - Expiry - Test expiry
 - CSC - Test card security code
+- DynamicUrl (optional) - Dynamic return url (e.g https://your-website-co.nz)
 - HmacKey - Test HMAC key (only required for HMAC authenticated endpoints)
 
 ## Installing

@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "1443f04f-2336-4be6-bf6a-084c02c12054",
+		"_postman_id": "a85b0290-4d42-479d-9e2a-4a26abc6b17b",
 		"name": "Paystation",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -14,7 +14,6 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "a1b5ec40-d15f-4e12-893f-83872d9ad73d",
 								"exec": [
 									""
 								],
@@ -52,7 +51,6 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "a1b5ec40-d15f-4e12-893f-83872d9ad73d",
 								"exec": [
 									""
 								],
@@ -62,7 +60,6 @@
 						{
 							"listen": "prerequest",
 							"script": {
-								"id": "ffe519b4-b90a-42f8-83b2-afc178916d99",
 								"exec": [
 									"/*\r",
 									"-----------------------------------------------------------------\r",
@@ -166,7 +163,6 @@
 						{
 							"listen": "prerequest",
 							"script": {
-								"id": "adbbbca5-94f2-4f2f-983c-beb15d1e43ac",
 								"exec": [
 									"/*\r",
 									"-----------------------------------------------------------------\r",
@@ -234,9 +230,85 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "3 party with HMAC [dynamic url]",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"/*\r",
+									"-----------------------------------------------------------------\r",
+									"1) Add the following code to 'Pre-request Script' tab\r",
+									"2) Make sure you have an Environment enabled for your request\r",
+									"3) Append to url: {{hmacQueryString}}\r",
+									"4) Add new environment variable `HmacKey` with your key\r",
+									"-----------------------------------------------------------------\r",
+									"*/\r",
+									"function buildPostBody(body) {\r",
+									"    const uuid = require('uuid');\r",
+									"    body = JSON.parse('{\"' + decodeURI(body).replace(/\\s/g, '').replace(/\"/g, '\\\\\"').replace(/&/g, '\",\"').replace(/=/g,'\":\"') + '\"}');\r",
+									"    console.log('body:'+ body);\r",
+									"    body.pstn_ms = 'MS-HMAC-' + uuid.v4();\r",
+									"    pm.variables.set('MerchantSession', body.pstn_ms);\r",
+									"    body.pstn_pi = pm.variables.get(\"PaystationAccount\");\r",
+									"    body.pstn_gi = pm.variables.get(\"PaystationGateway\");\r",
+									"    body.pstn_du = pm.variables.get(\"DynamicUrl\");\r",
+									"    return Object.keys(body).map(function(k) { return encodeURIComponent(k) + '=' + body[k]}).join('&');\r",
+									"}\r",
+									"\r",
+									"function getAuthHeader(httpMethod, requestUrl, requestBody) {\r",
+									"    const moment = require('moment');\r",
+									"\r",
+									"    const AUTH_TYPE = 'HMAC-SHA512';\r",
+									"    const HMAC_KEY = postman.getEnvironmentVariable('HmacKey');\r",
+									"    console.log(requestBody);\r",
+									"    requestBody = buildPostBody(requestBody);\r",
+									"    console.log(requestBody);\r",
+									"    var timestamp = moment(new Date().toISOString()).valueOf();\r",
+									"    var dataToHash = timestamp + 'paystation' + requestBody;\r",
+									"    var hmacDigest = CryptoJS.enc.Hex.stringify(CryptoJS.HmacSHA512(dataToHash, HMAC_KEY));\r",
+									"    return 'pstn_HMACTimestamp=' + timestamp + '&pstn_HMAC=' + hmacDigest;\r",
+									"}\r",
+									"\r",
+									"postman.setEnvironmentVariable('hmacQueryString', getAuthHeader(request['method'], request['url'], request['data']));"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "paystation=_empty&pstn_nr=t&pstn_pi={{PaystationAccount}}&pstn_gi={{PaystationGateway}}&pstn_ms={{MerchantSession}}&pstn_am=5000&pstn_du={{DynamicUrl}}"
+						},
+						"url": {
+							"raw": "https://www.paystation.co.nz/direct/paystation.dll?{{hmacQueryString}}",
+							"protocol": "https",
+							"host": [
+								"www",
+								"paystation",
+								"co",
+								"nz"
+							],
+							"path": [
+								"direct",
+								"paystation.dll"
+							],
+							"query": [
+								{
+									"key": "{{hmacQueryString}}",
+									"value": null
+								}
+							]
+						}
+					},
+					"response": []
 				}
-			],
-			"protocolProfileBehavior": {}
+			]
 		},
 		{
 			"name": "Authorisation",
@@ -247,7 +319,6 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "d820c531-012c-4b05-b56f-997bb83b2bc2",
 								"exec": [
 									"pm.test('response is ok', function() {",
 									"    pm.response.to.have.status(200);",
@@ -296,7 +367,6 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "2ae460c0-6f39-4159-8250-1233baa23833",
 								"exec": [
 									""
 								],
@@ -328,8 +398,7 @@
 					},
 					"response": []
 				}
-			],
-			"protocolProfileBehavior": {}
+			]
 		},
 		{
 			"name": "Capture",
@@ -360,8 +429,7 @@
 					},
 					"response": []
 				}
-			],
-			"protocolProfileBehavior": {}
+			]
 		},
 		{
 			"name": "Refund",
@@ -372,7 +440,6 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "8d4381a3-b701-489b-ba9f-8c67ad8e862c",
 								"exec": [
 									""
 								],
@@ -404,8 +471,7 @@
 					},
 					"response": []
 				}
-			],
-			"protocolProfileBehavior": {}
+			]
 		},
 		{
 			"name": "Reversal",
@@ -416,7 +482,6 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "2e08a9b6-189f-44df-afee-ac10094b00d1",
 								"exec": [
 									""
 								],
@@ -448,8 +513,7 @@
 					},
 					"response": []
 				}
-			],
-			"protocolProfileBehavior": {}
+			]
 		},
 		{
 			"name": "Tokens",
@@ -466,7 +530,6 @@
 										{
 											"listen": "test",
 											"script": {
-												"id": "a52d3345-9d83-4d5b-83cc-5e090e5fe186",
 												"exec": [
 													""
 												],
@@ -504,7 +567,6 @@
 										{
 											"listen": "test",
 											"script": {
-												"id": "8104c498-8b20-426a-b1f4-272918a791b3",
 												"exec": [
 													"pm.test('response is ok', function() {",
 													"    pm.response.to.have.status(200);",
@@ -547,9 +609,7 @@
 									},
 									"response": []
 								}
-							],
-							"protocolProfileBehavior": {},
-							"_postman_isSubFolder": true
+							]
 						},
 						{
 							"name": "3 party",
@@ -560,7 +620,6 @@
 										{
 											"listen": "test",
 											"script": {
-												"id": "e7159313-6147-44b3-bfb4-ae48f2bda024",
 												"exec": [
 													""
 												],
@@ -598,7 +657,6 @@
 										{
 											"listen": "test",
 											"script": {
-												"id": "8ae1356d-4883-45fd-b946-c007deb77502",
 												"exec": [
 													""
 												],
@@ -630,13 +688,9 @@
 									},
 									"response": []
 								}
-							],
-							"protocolProfileBehavior": {},
-							"_postman_isSubFolder": true
+							]
 						}
-					],
-					"protocolProfileBehavior": {},
-					"_postman_isSubFolder": true
+					]
 				},
 				{
 					"name": "Initiator",
@@ -650,7 +704,6 @@
 										{
 											"listen": "test",
 											"script": {
-												"id": "c2104908-27dd-416e-91e5-a6feb4357016",
 												"exec": [
 													""
 												],
@@ -688,7 +741,6 @@
 										{
 											"listen": "test",
 											"script": {
-												"id": "1ea86957-56ed-4ac8-87c1-4395716c97b0",
 												"exec": [
 													""
 												],
@@ -720,9 +772,7 @@
 									},
 									"response": []
 								}
-							],
-							"protocolProfileBehavior": {},
-							"_postman_isSubFolder": true
+							]
 						},
 						{
 							"name": "3 party",
@@ -733,7 +783,6 @@
 										{
 											"listen": "test",
 											"script": {
-												"id": "721281ed-0c14-4f85-98a8-8d83b6ac3f5e",
 												"exec": [
 													""
 												],
@@ -771,7 +820,6 @@
 										{
 											"listen": "test",
 											"script": {
-												"id": "a5b1b0a4-22bb-4d8d-b31e-5973f94e11e3",
 												"exec": [
 													""
 												],
@@ -803,13 +851,9 @@
 									},
 									"response": []
 								}
-							],
-							"protocolProfileBehavior": {},
-							"_postman_isSubFolder": true
+							]
 						}
-					],
-					"protocolProfileBehavior": {},
-					"_postman_isSubFolder": true
+					]
 				},
 				{
 					"name": "Bill",
@@ -820,7 +864,6 @@
 								{
 									"listen": "test",
 									"script": {
-										"id": "2bd0d49e-de1e-43db-a867-5393eb389a6d",
 										"exec": [
 											""
 										],
@@ -858,7 +901,6 @@
 								{
 									"listen": "test",
 									"script": {
-										"id": "5f58a6dd-f4f8-48b5-912e-0390349943d1",
 										"exec": [
 											""
 										],
@@ -890,9 +932,7 @@
 							},
 							"response": []
 						}
-					],
-					"protocolProfileBehavior": {},
-					"_postman_isSubFolder": true
+					]
 				},
 				{
 					"name": "Update",
@@ -903,7 +943,6 @@
 								{
 									"listen": "test",
 									"script": {
-										"id": "df302494-8890-45c1-b8f7-f6efc290d7dd",
 										"exec": [
 											""
 										],
@@ -935,9 +974,7 @@
 							},
 							"response": []
 						}
-					],
-					"protocolProfileBehavior": {},
-					"_postman_isSubFolder": true
+					]
 				},
 				{
 					"name": "Delete",
@@ -948,7 +985,6 @@
 								{
 									"listen": "test",
 									"script": {
-										"id": "2b19b35a-8a8c-44cc-8768-4523337b94c2",
 										"exec": [
 											""
 										],
@@ -980,12 +1016,9 @@
 							},
 							"response": []
 						}
-					],
-					"protocolProfileBehavior": {},
-					"_postman_isSubFolder": true
+					]
 				}
-			],
-			"protocolProfileBehavior": {}
+			]
 		},
 		{
 			"name": "PayMe",
@@ -1063,7 +1096,6 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "20200b01-9921-4f6a-b2c3-044416ff57cc",
 								"exec": [
 									""
 								],
@@ -1101,7 +1133,6 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "59286344-16f6-4459-8238-ef019003df87",
 								"exec": [
 									""
 								],
@@ -1139,7 +1170,6 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "63b3cb54-df30-481b-ac9f-6d512bf9d3cb",
 								"exec": [
 									""
 								],
@@ -1171,8 +1201,7 @@
 					},
 					"response": []
 				}
-			],
-			"protocolProfileBehavior": {}
+			]
 		},
 		{
 			"name": "Quick lookup",
@@ -1281,8 +1310,7 @@
 					},
 					"response": []
 				}
-			],
-			"protocolProfileBehavior": {}
+			]
 		},
 		{
 			"name": "Transaction reporting",
@@ -1484,9 +1512,7 @@
 					},
 					"response": []
 				}
-			],
-			"protocolProfileBehavior": {}
+			]
 		}
-	],
-	"protocolProfileBehavior": {}
+	]
 }
