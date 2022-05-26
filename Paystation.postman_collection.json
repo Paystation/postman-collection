@@ -1307,6 +1307,82 @@
 					"response": []
 				},
 				{
+					"name": "Lookup by merchant session with HMAC",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"/*\r",
+									"-----------------------------------------------------------------\r",
+									"1) Add the following code to 'Pre-request Script' tab\r",
+									"2) Make sure you have an Environment enabled for your request\r",
+									"3) Append to url: {{hmacQueryString}}\r",
+									"4) Add new environment variable HMAC_KEY with your key\r",
+									"-----------------------------------------------------------------\r",
+									"*/\r",
+									"\r",
+									"function replaceHmacString(requestBody) {\r",
+									"\r",
+									"    const moment = require('moment');   \r",
+									"    const HMAC_KEY = postman.getEnvironmentVariable('HmacKey');    \r",
+									"    var timestamp = moment(new Date().toISOString()).valueOf();\r",
+									"    var body = 'pi=' + pm.variables.get(\"PaystationAccount\") + '&ms=' + request.data.ms;\r",
+									"    var dataToHash = timestamp + 'paystation' + body;    \r",
+									"    var hmacDigest = CryptoJS.enc.Hex.stringify(CryptoJS.HmacSHA512(dataToHash, HMAC_KEY));    \r",
+									"    return 'pstn_HMACTimestamp=' + timestamp + '&pstn_HMAC=' + hmacDigest;\r",
+									"}\r",
+									"\r",
+									"postman.setEnvironmentVariable('hmacQueryString', replaceHmacString(request['data']));\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "pi",
+									"value": "{{PaystationAccount}}",
+									"type": "text"
+								},
+								{
+									"key": "ms",
+									"value": "<merchant_session_goes_here>",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "https://payments.paystation.co.nz/lookup/?{{hmacQueryString}}",
+							"protocol": "https",
+							"host": [
+								"payments",
+								"paystation",
+								"co",
+								"nz"
+							],
+							"path": [
+								"lookup",
+								""
+							],
+							"query": [
+								{
+									"key": "{{hmacQueryString}}",
+									"value": null
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "Lookup by transaction id",
 					"request": {
 						"method": "GET",
@@ -1399,6 +1475,82 @@
 								{
 									"key": "ti",
 									"value": "0000000000-01"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Lookup by transaction id with HMAC",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"/*\r",
+									"-----------------------------------------------------------------\r",
+									"1) Add the following code to 'Pre-request Script' tab\r",
+									"2) Make sure you have an Environment enabled for your request\r",
+									"3) Append to url: {{hmacQueryString}}\r",
+									"4) Add new environment variable HMAC_KEY with your key\r",
+									"-----------------------------------------------------------------\r",
+									"*/\r",
+									"\r",
+									"function replaceHmacString(requestBody) {\r",
+									"\r",
+									"    const moment = require('moment');   \r",
+									"    const HMAC_KEY = postman.getEnvironmentVariable('HmacKey');    \r",
+									"    var timestamp = moment(new Date().toISOString()).valueOf();\r",
+									"    var body = 'pi=' + pm.variables.get(\"PaystationAccount\") + '&ti=' + request.data.ti;\r",
+									"    var dataToHash = timestamp + 'paystation' + body;    \r",
+									"    var hmacDigest = CryptoJS.enc.Hex.stringify(CryptoJS.HmacSHA512(dataToHash, HMAC_KEY));    \r",
+									"    return 'pstn_HMACTimestamp=' + timestamp + '&pstn_HMAC=' + hmacDigest;\r",
+									"}\r",
+									"\r",
+									"postman.setEnvironmentVariable('hmacQueryString', replaceHmacString(request['data']));\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "pi",
+									"value": "{{PaystationAccount}}",
+									"type": "text"
+								},
+								{
+									"key": "ti",
+									"value": "0000000000-01",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "https://payments.paystation.co.nz/lookup/?{{hmacQueryString}}",
+							"protocol": "https",
+							"host": [
+								"payments",
+								"paystation",
+								"co",
+								"nz"
+							],
+							"path": [
+								"lookup",
+								""
+							],
+							"query": [
+								{
+									"key": "{{hmacQueryString}}",
+									"value": null
 								}
 							]
 						}
