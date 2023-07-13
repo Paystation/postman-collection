@@ -1,9 +1,9 @@
 {
 	"info": {
-		"_postman_id": "e63de209-9f3e-48af-9574-f13ec37e9c5b",
+		"_postman_id": "17fba40c-c63b-44aa-b552-e4ee63b290e9",
 		"name": "Paystation",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "65700"
+		"_exporter_id": "15407849"
 	},
 	"item": [
 		{
@@ -110,7 +110,7 @@
 							"raw": "paystation=_empty&pstn_nr=t&pstn_pi={{PaystationAccount}}&pstn_gi={{PaystationGateway}}&pstn_ms={{MerchantSession}}&pstn_2p=t&pstn_am=100&pstn_cn={{CardNumber}}&pstn_ex={{Expiry}}&pstn_cc={{CSC}}"
 						},
 						"url": {
-							"raw": "https://www.paystation.co.nz/direct/paystation.dll?{{hmacQueryString}}",
+							"raw": "https://www.paystation.co.nz/direct/paystation.dll?{{hmacQueryString}}=",
 							"protocol": "https",
 							"host": [
 								"www",
@@ -153,80 +153,6 @@
 							"path": [
 								"direct",
 								"paystation.dll"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "3 party with HMAC",
-					"event": [
-						{
-							"listen": "prerequest",
-							"script": {
-								"exec": [
-									"/*\r",
-									"-----------------------------------------------------------------\r",
-									"1) Add the following code to 'Pre-request Script' tab\r",
-									"2) Make sure you have an Environment enabled for your request\r",
-									"3) Append to url: {{hmacQueryString}}\r",
-									"4) Add new environment variable `HmacKey` with your key\r",
-									"-----------------------------------------------------------------\r",
-									"*/\r",
-									"function buildPostBody(body) {\r",
-									"    const uuid = require('uuid');\r",
-									"    body = JSON.parse('{\"' + decodeURI(body).replace(/\\s/g, '').replace(/\"/g, '\\\\\"').replace(/&/g, '\",\"').replace(/=/g,'\":\"') + '\"}');\r",
-									"    body.pstn_ms = 'MS-HMAC-' + uuid.v4();\r",
-									"    pm.variables.set('MerchantSession', body.pstn_ms);\r",
-									"    body.pstn_pi = pm.variables.get(\"PaystationAccount\");\r",
-									"    body.pstn_gi = pm.variables.get(\"PaystationGateway\");\r",
-									"    return Object.keys(body).map(function(k) { return encodeURIComponent(k) + '=' + encodeURIComponent(body[k])}).join('&');\r",
-									"}\r",
-									"\r",
-									"function getAuthHeader(httpMethod, requestUrl, requestBody) {\r",
-									"    const moment = require('moment');\r",
-									"\r",
-									"    const AUTH_TYPE = 'HMAC-SHA512';\r",
-									"    const HMAC_KEY = postman.getEnvironmentVariable('HmacKey');\r",
-									"\r",
-									"    requestBody = buildPostBody(requestBody);\r",
-									"    var timestamp = moment(new Date().toISOString()).valueOf();\r",
-									"    var dataToHash = timestamp + 'paystation' + requestBody;\r",
-									"    var hmacDigest = CryptoJS.enc.Hex.stringify(CryptoJS.HmacSHA512(dataToHash, HMAC_KEY));\r",
-									"    return 'pstn_HMACTimestamp=' + timestamp + '&pstn_HMAC=' + hmacDigest;\r",
-									"}\r",
-									"\r",
-									"postman.setEnvironmentVariable('hmacQueryString', getAuthHeader(request['method'], request['url'], request['data']));"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "paystation=_empty&pstn_nr=t&pstn_pi={{PaystationAccount}}&pstn_gi={{PaystationGateway}}&pstn_ms={{MerchantSession}}&pstn_am=5000"
-						},
-						"url": {
-							"raw": "https://www.paystation.co.nz/direct/paystation.dll?{{hmacQueryString}}",
-							"protocol": "https",
-							"host": [
-								"www",
-								"paystation",
-								"co",
-								"nz"
-							],
-							"path": [
-								"direct",
-								"paystation.dll"
-							],
-							"query": [
-								{
-									"key": "{{hmacQueryString}}",
-									"value": ""
-								}
 							]
 						}
 					},
@@ -287,7 +213,7 @@
 							"raw": "paystation=_empty&pstn_nr=t&pstn_pi={{PaystationAccount}}&pstn_gi={{PaystationGateway}}&pstn_ms={{MerchantSession}}&pstn_am=5000&pstn_du={{DynamicUrl}}"
 						},
 						"url": {
-							"raw": "https://www.paystation.co.nz/direct/paystation.dll?{{hmacQueryString}}",
+							"raw": "https://www.paystation.co.nz/direct/paystation.dll?{{hmacQueryString}}=",
 							"protocol": "https",
 							"host": [
 								"www",
