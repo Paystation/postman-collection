@@ -110,7 +110,7 @@
 							"raw": "paystation=_empty&pstn_nr=t&pstn_pi={{PaystationAccount}}&pstn_gi={{PaystationGateway}}&pstn_ms={{MerchantSession}}&pstn_2p=t&pstn_am=100&pstn_cn={{CardNumber}}&pstn_ex={{Expiry}}&pstn_cc={{CSC}}"
 						},
 						"url": {
-							"raw": "https://www.paystation.co.nz/direct/paystation.dll?{{hmacQueryString}}=",
+							"raw": "https://www.paystation.co.nz/direct/paystation.dll?{{hmacQueryString}}",
 							"protocol": "https",
 							"host": [
 								"www",
@@ -213,7 +213,7 @@
 							"raw": "paystation=_empty&pstn_nr=t&pstn_pi={{PaystationAccount}}&pstn_gi={{PaystationGateway}}&pstn_ms={{MerchantSession}}&pstn_am=5000&pstn_du={{DynamicUrl}}"
 						},
 						"url": {
-							"raw": "https://www.paystation.co.nz/direct/paystation.dll?{{hmacQueryString}}=",
+							"raw": "https://www.paystation.co.nz/direct/paystation.dll?{{hmacQueryString}}",
 							"protocol": "https",
 							"host": [
 								"www",
